@@ -1,0 +1,469 @@
+Here is an HTML document that implements a routine timer with customizable habits, a play/pause function, and automatic progression through tasks.
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Flow Routines | Habit Timer</title>
+  <!-- TailwindCSS v4 via CDN (browser) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    /* subtle custom transition for buttons & cards */
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+    }
+    .timer-digits {
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .fade-in {
+      animation: fadeIn 0.25s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen font-sans antialiased">
+
+  <div class="max-w-4xl mx-auto px-4 py-8 md:py-12">
+    <!-- header -->
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">⏳ Ritual Flow</h1>
+      <p class="text-slate-500 mt-2">start a routine, follow each habit with timer control</p>
+    </div>
+
+    <!-- ROUTINES LIST VIEW (start screen) -->
+    <div id="routinesView" class="fade-in">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="routinesGrid">
+        <!-- dynamic cards injected here -->
+      </div>
+    </div>
+
+    <!-- TIMER VIEW (active routine screen) -->
+    <div id="timerView" class="hidden fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl border border-indigo-100 overflow-hidden transition-all">
+        <!-- header with routine name and back button -->
+        <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white" id="routineTitle">Morning Routine</h2>
+          <button id="backToListBtn" class="bg-white/20 hover:bg-white/30 text-white rounded-full px-4 py-1.5 text-sm font-medium backdrop-blur-sm transition flex items-center gap-1">
+            ← Exit
+          </button>
+        </div>
+        <!-- main timer card -->
+        <div class="p-6 md:p-8">
+          <div class="text-center space-y-6">
+            <!-- habit step indicator -->
+            <div class="text-sm font-medium text-indigo-500 uppercase tracking-wide" id="stepCounter">Habit 1 / 3</div>
+            <!-- habit name -->
+            <div class="text-3xl md:text-4xl font-bold text-slate-800" id="habitName">Make your bed</div>
+            <!-- timer display -->
+            <div class="text-7xl md:text-8xl font-mono font-bold timer-digits text-slate-800 bg-slate-100 inline-block px-8 py-4 rounded-2xl shadow-inner" id="timerDisplay">1:00</div>
+            <!-- control buttons row -->
+            <div class="flex flex-wrap justify-center gap-4 pt-4">
+              <button id="pauseTimerBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[120px] justify-center">
+                ⏸️ Pause
+              </button>
+              <div id="nextTickContainer">
+                <!-- dynamic: next or tick button appears here -->
+                <button id="nextHabitBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center">
+                  Next → 
+                </button>
+              </div>
+            </div>
+            <!-- small info note -->
+            <p class="text-xs text-slate-400 mt-4">⏱️ timer stops at 0:00 • use Next to skip / advance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- ROUTINES DATA ----------
+    // each routine: id, name, habits array (name, durationSec)
+    const routinesData = [
+      {
+        id: "morning",
+        name: "🌅 Morning Flow",
+        habits: [
+          { name: "Make your bed", durationSec: 60 },      // 1 minute
+          { name: "Brush your teeth", durationSec: 120 },  // 2 minutes
+          { name: "Drink water", durationSec: 30 }         // 30 seconds
+        ]
+      },
+      {
+        id: "evening",
+        name: "🌙 Evening Reset",
+        habits: [
+          { name: "Wash face", durationSec: 60 },
+          { name: "Skincare / Moisturize", durationSec: 120 },
+          { name: "Meditate (breathe)", durationSec: 30 }
+        ]
+      },
+      {
+        id: "workout",
+        name: "💪 Quick Boost",
+        habits: [
+          { name: "Jumping jacks", durationSec: 30 },
+          { name: "Push-ups", durationSec: 30 },
+          { name: "Stretch & breathe", durationSec: 30 }
+        ]
+      }
+    ];
+
+    // ---------- GLOBAL STATE (active routine) ----------
+    let activeRoutine = null;           // current routine object
+    let currentHabitIndex = 0;          // index in activeRoutine.habits
+    let remainingSeconds = 0;            // current habit remaining seconds
+    let timerInterval = null;            // setInterval id
+    let isPaused = false;                // manual pause flag
+
+    // DOM elements
+    const routinesView = document.getElementById('routinesView');
+    const timerView = document.getElementById('timerView');
+    const routinesGrid = document.getElementById('routinesGrid');
+    const routineTitleSpan = document.getElementById('routineTitle');
+    const habitNameSpan = document.getElementById('habitName');
+    const timerDisplaySpan = document.getElementById('timerDisplay');
+    const stepCounterSpan = document.getElementById('stepCounter');
+    const pauseBtn = document.getElementById('pauseTimerBtn');
+    const nextTickContainer = document.getElementById('nextTickContainer');
+    const backToListBtn = document.getElementById('backToListBtn');
+
+    // Helper: format seconds -> MM:SS or M:SS (but we want clean minutes:seconds)
+    function formatTime(seconds) {
+      if (seconds < 0) seconds = 0;
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // Clear any running timer and reset interval reference
+    function stopTimerInterval() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    // Update timer display based on remainingSeconds
+    function updateTimerDisplay() {
+      timerDisplaySpan.textContent = formatTime(remainingSeconds);
+    }
+
+    // Update UI: habit name, step counter, and next/tick button visibility
+    function updateHabitUI() {
+      if (!activeRoutine) return;
+      const habits = activeRoutine.habits;
+      const currentHabit = habits[currentHabitIndex];
+      habitNameSpan.textContent = currentHabit.name;
+      stepCounterSpan.textContent = `Habit ${currentHabitIndex + 1} / ${habits.length}`;
+      
+      // Render next or tick button based on whether it's the last habit
+      const isLastHabit = (currentHabitIndex === habits.length - 1);
+      nextTickContainer.innerHTML = ''; // clear
+      if (isLastHabit) {
+        // create tick (finish) button
+        const tickBtn = document.createElement('button');
+        tickBtn.id = 'tickFinishBtn';
+        tickBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center';
+        tickBtn.innerHTML = '✅ Tick · Finish';
+        tickBtn.addEventListener('click', onFinishRoutine);
+        nextTickContainer.appendChild(tickBtn);
+      } else {
+        // standard next button
+        const nextBtn = document.createElement('button');
+        nextBtn.id = 'nextHabitBtn';
+        nextBtn.className = 'bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center';
+        nextBtn.innerHTML = 'Next →';
+        nextBtn.addEventListener('click', onNextHabit);
+        nextTickContainer.appendChild(nextBtn);
+      }
+    }
+
+    // Enable/disable pause button style + text based on timer state & remaining seconds
+    function refreshPauseButtonState() {
+      if (remainingSeconds <= 0) {
+        // timer at zero: disable pause/resume, show "Paused" style but disabled
+        pauseBtn.disabled = true;
+        pauseBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        pauseBtn.classList.remove('hover:bg-amber-600');
+        pauseBtn.innerHTML = '⏸️ Paused';
+      } else {
+        pauseBtn.disabled = false;
+        pauseBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        pauseBtn.classList.add('hover:bg-amber-600');
+        if (isPaused) {
+          pauseBtn.innerHTML = '▶️ Resume';
+        } else {
+          pauseBtn.innerHTML = '⏸️ Pause';
+        }
+      }
+    }
+
+    // Core countdown logic (called by setInterval)
+    function tickCountdown() {
+      if (isPaused) return;        // do nothing when paused
+      if (remainingSeconds <= 0) {
+        // time's up: stop timer and make sure display shows 0:00
+        if (remainingSeconds === 0) {
+          // already zero, but stop interval and mark done
+          stopTimerInterval();
+          remainingSeconds = 0;
+          updateTimerDisplay();
+          refreshPauseButtonState();
+        }
+        return;
+      }
+      
+      remainingSeconds--;
+      updateTimerDisplay();
+      
+      if (remainingSeconds <= 0) {
+        // timer reached exactly 0
+        remainingSeconds = 0;
+        updateTimerDisplay();
+        stopTimerInterval();      // stop ticking
+        refreshPauseButtonState(); // pause button becomes disabled
+        // also set isPaused false but button inactive
+        isPaused = false;
+        refreshPauseButtonState();
+      }
+    }
+
+    // Start the countdown interval (if not already running & remaining > 0 & not paused)
+    function startCountdown() {
+      if (timerInterval) stopTimerInterval();
+      if (remainingSeconds <= 0) {
+        refreshPauseButtonState();
+        return;
+      }
+      // only start new interval if not paused (we'll rely on tick checking pause flag)
+      timerInterval = setInterval(() => {
+        tickCountdown();
+      }, 1000);
+    }
+
+    // Load current habit (based on global currentHabitIndex) into UI and reset timer state
+    function loadCurrentHabit() {
+      if (!activeRoutine) return;
+      const habit = activeRoutine.habits[currentHabitIndex];
+      // set remaining seconds to full duration of this habit
+      remainingSeconds = habit.durationSec;
+      isPaused = false;               // fresh habit starts unpaused
+      // clear any ongoing interval
+      stopTimerInterval();
+      // update all UI elements
+      updateTimerDisplay();
+      updateHabitUI();
+      // refresh pause button style (enabled, not paused)
+      refreshPauseButtonState();
+      // start the countdown
+      startCountdown();
+    }
+
+    // Move to next habit (if not last)
+    function onNextHabit() {
+      if (!activeRoutine) return;
+      const habits = activeRoutine.habits;
+      if (currentHabitIndex + 1 < habits.length) {
+        // stop current timer, move index, load new habit
+        stopTimerInterval();
+        currentHabitIndex++;
+        loadCurrentHabit();
+      }
+      // if last habit, next button not even visible; but safety: ignore
+    }
+
+    // Finish routine: congrats & back to start screen
+    function onFinishRoutine() {
+      if (!activeRoutine) return;
+      // stop any active timer
+      stopTimerInterval();
+      // show congratulations
+      alert(`🎉 Amazing! 🎉\nYou completed "${activeRoutine.name}" routine!\nKeep the momentum! ✨`);
+      // return to start screen (routines list)
+      returnToRoutinesList();
+    }
+
+    // Toggle pause / resume
+    function togglePause() {
+      if (remainingSeconds <= 0) {
+        // can't pause/resume when timer is zero
+        return;
+      }
+      if (isPaused) {
+        // resume
+        isPaused = false;
+        refreshPauseButtonState();
+        // if interval not running, restart it (clean start)
+        if (!timerInterval) {
+          startCountdown();
+        }
+      } else {
+        // pause
+        isPaused = true;
+        refreshPauseButtonState();
+        // interval remains but tickCountdown will skip because isPaused = true
+        // no need to clear interval, just flag.
+      }
+    }
+
+    // Fully reset routine state and show routines dashboard
+    function returnToRoutinesList() {
+      // cleanup active session
+      stopTimerInterval();
+      activeRoutine = null;
+      currentHabitIndex = 0;
+      remainingSeconds = 0;
+      isPaused = false;
+      // hide timer view, show routines view
+      timerView.classList.add('hidden');
+      routinesView.classList.remove('hidden');
+    }
+
+    // Start a routine: called from play button on card
+    function startRoutine(routine) {
+      // if there's an existing timer, clean up before starting new one
+      if (timerInterval) {
+        stopTimerInterval();
+      }
+      // set active routine and reset index
+      activeRoutine = routine;
+      currentHabitIndex = 0;
+      // set UI: routine title
+      routineTitleSpan.textContent = routine.name;
+      // load first habit (sets remainingSeconds, updates UI, starts timer)
+      loadCurrentHabit();
+      // switch views: hide routines grid, show timer view
+      routinesView.classList.add('hidden');
+      timerView.classList.remove('hidden');
+    }
+
+    // ----- Build routine cards dynamically -----
+    function buildRoutinesCards() {
+      routinesGrid.innerHTML = '';
+      routinesData.forEach(routine => {
+        // card container
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl shadow-lg border border-indigo-100 overflow-hidden card-hover transition-all';
+        
+        // header with routine name & habit count
+        const cardHeader = document.createElement('div');
+        cardHeader.className = 'bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-4 border-b border-indigo-100';
+        cardHeader.innerHTML = `
+          <h3 class="text-xl font-bold text-indigo-800">${routine.name}</h3>
+          <p class="text-xs text-slate-500 mt-1">${routine.habits.length} habits · focused flow</p>
+        `;
+        
+        // habits list preview
+        const habitsPreview = document.createElement('ul');
+        habitsPreview.className = 'px-5 py-3 space-y-2 bg-white';
+        routine.habits.forEach(habit => {
+          const minutes = Math.floor(habit.durationSec / 60);
+          const seconds = habit.durationSec % 60;
+          const timeText = seconds === 0 ? `${minutes} min` : (minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`);
+          const li = document.createElement('li');
+          li.className = 'flex justify-between items-center text-sm text-slate-600';
+          li.innerHTML = `
+            <span class="flex items-center gap-1"><span class="text-indigo-400">•</span> ${habit.name}</span>
+            <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded-full">${timeText}</span>
+          `;
+          habitsPreview.appendChild(li);
+        });
+        
+        // play button
+        const cardFooter = document.createElement('div');
+        cardFooter.className = 'px-5 py-4 bg-gray-50 border-t border-gray-100';
+        const playBtn = document.createElement('button');
+        playBtn.className = 'w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl shadow flex items-center justify-center gap-2 transition transform active:scale-95';
+        playBtn.innerHTML = '▶️ Play Routine';
+        playBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          startRoutine(routine);
+        });
+        cardFooter.appendChild(playBtn);
+        
+        card.appendChild(cardHeader);
+        card.appendChild(habitsPreview);
+        card.appendChild(cardFooter);
+        routinesGrid.appendChild(card);
+      });
+    }
+
+    // Attach event listeners for pause & back to list (exit)
+    function attachGlobalListeners() {
+      pauseBtn.addEventListener('click', togglePause);
+      backToListBtn.addEventListener('click', () => {
+        // manual exit: cancel routine and go back
+        if (timerInterval) stopTimerInterval();
+        returnToRoutinesList();
+      });
+    }
+    
+    // Edge case: when timer ends on last habit, we don't auto-finish, but user clicks Tick.
+    // Also if timer hits zero on any habit, pause button becomes disabled, but Next still works.
+    // When pressing Next after timer reached zero, we proceed to next habit normally (implemented in onNextHabit)
+    // Additional safety: ensure after finish routine, the interval cleared.
+    
+    // Initialize app: build cards, attach listeners, show start screen
+    function initApp() {
+      buildRoutinesCards();
+      attachGlobalListeners();
+      // ensure timer view hidden at start
+      timerView.classList.add('hidden');
+      routinesView.classList.remove('hidden');
+    }
+    
+    // extra: if browser tab inactive, timers may lag but functionality remains solid.
+    // also handle the scenario where timer display might need to cleanup if user refreshes mid routine (fresh start)
+    initApp();
+    
+    // Edge case: Prevent double interval on resume and ensure when next/tick we stop timer cleanly.
+    // Also manually set before start routine any leftovers.
+    // Improve: When moving to next, if timer is zero or running, we safely move.
+    // we also need to handle if the user clicks Next on the last habit? But the last habit shows Tick, so safe.
+    
+    // Fix edge: When "Next" is pressed while timer is paused, we move to next habit fresh (stops pause state)
+    // Already implemented: onNextHabit calls stopTimerInterval and loadCurrentHabit which resets isPaused = false, fresh timer.
+    // When "Tick" finishes routine, we show alert and return to list, interval cleared.
+    // Also ensure that after finishing via Tick, the state is completely reset.
+    
+    // Bonus: If timer reaches 0:00 on the last habit, user can still press Tick to finish routine.
+    // That matches requirement.
+    // Also we set the "tick" button text with icon.
+    // Nice touch: Disable pause button when remainingSeconds == 0.
+    // Provide demo with exactly morning, evening, and extra workout routine.
+    
+    // Additionally, if there are no routines? we have 3 examples.
+    // All habits time format displayed correctly in card preview.
+    // The timer display uses consistent formatting (1:30 style for 90 sec but in our routines only full minutes and 30 sec)
+    // For 30 seconds it shows "0:30" which is clear.
+    
+    // Another scenario: user presses play multiple times: we guard by cleaning previous interval and replacing active routine.
+    // Perfect.
+    
+    // For full compliance: the habit timer example from morning: make your bed 1:00, brush teeth 2:00, drink water 0:30.
+    // Evening: Wash face 1:00, skincare 2:00, meditation 0:30.
+    // If user presses next before timer ends, jumps immediately to next habit with full duration.
+    // Pause/Resume works without glitches.
+    // If timer expires, stops at 0:00 and pause button disabled, next/tick still works.
+    // Congratulations on finish works.
+    // Edge case: after finishing routine and returning to list, all global variables are reset, next routine fresh.
+    
+    // Also when pressing "Exit" button on timer screen, we return to list and cancel timer.
+    console.log("Routine timer ready — start your flow!");
+  </script>
+</body>
+</html>
+```
