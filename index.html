@@ -1,7 +1,6 @@
-Here is an HTML document that implements a routine timer with customizable habits, a play/pause function, and automatic progression through tasks.
-```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
@@ -13,32 +12,47 @@ Here is an HTML document that implements a routine timer with customizable habit
     .card-hover {
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
     .card-hover:hover {
       transform: translateY(-3px);
       box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
     }
+
     .timer-digits {
       font-feature-settings: "tnum";
       font-variant-numeric: tabular-nums;
     }
+
     button:active {
       transform: scale(0.97);
     }
+
     .fade-in {
       animation: fadeIn 0.25s ease-out;
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px);}
-      to { opacity: 1; transform: translateY(0);}
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
+
 <body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen font-sans antialiased">
 
   <div class="max-w-4xl mx-auto px-4 py-8 md:py-12">
     <!-- header -->
     <div class="text-center mb-10">
-      <h1 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">⏳ Ritual Flow</h1>
+      <h1
+        class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+        ⏳ Ritual Flow</h1>
       <p class="text-slate-500 mt-2">start a routine, follow each habit with timer control</p>
     </div>
 
@@ -55,7 +69,8 @@ Here is an HTML document that implements a routine timer with customizable habit
         <!-- header with routine name and back button -->
         <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center">
           <h2 class="text-xl font-bold text-white" id="routineTitle">Morning Routine</h2>
-          <button id="backToListBtn" class="bg-white/20 hover:bg-white/30 text-white rounded-full px-4 py-1.5 text-sm font-medium backdrop-blur-sm transition flex items-center gap-1">
+          <button id="backToListBtn"
+            class="bg-white/20 hover:bg-white/30 text-white rounded-full px-4 py-1.5 text-sm font-medium backdrop-blur-sm transition flex items-center gap-1">
             ← Exit
           </button>
         </div>
@@ -67,16 +82,20 @@ Here is an HTML document that implements a routine timer with customizable habit
             <!-- habit name -->
             <div class="text-3xl md:text-4xl font-bold text-slate-800" id="habitName">Make your bed</div>
             <!-- timer display -->
-            <div class="text-7xl md:text-8xl font-mono font-bold timer-digits text-slate-800 bg-slate-100 inline-block px-8 py-4 rounded-2xl shadow-inner" id="timerDisplay">1:00</div>
+            <div
+              class="text-7xl md:text-8xl font-mono font-bold timer-digits text-slate-800 bg-slate-100 inline-block px-8 py-4 rounded-2xl shadow-inner"
+              id="timerDisplay">1:00</div>
             <!-- control buttons row -->
             <div class="flex flex-wrap justify-center gap-4 pt-4">
-              <button id="pauseTimerBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[120px] justify-center">
+              <button id="pauseTimerBtn"
+                class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[120px] justify-center">
                 ⏸️ Pause
               </button>
               <div id="nextTickContainer">
                 <!-- dynamic: next or tick button appears here -->
-                <button id="nextHabitBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center">
-                  Next → 
+                <button id="nextHabitBtn"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center">
+                  Next →
                 </button>
               </div>
             </div>
@@ -96,18 +115,42 @@ Here is an HTML document that implements a routine timer with customizable habit
         id: "morning",
         name: "🌅 Morning Flow",
         habits: [
-          { name: "Make your bed", durationSec: 60 },      // 1 minute
-          { name: "Brush your teeth", durationSec: 120 },  // 2 minutes
-          { name: "Drink water", durationSec: 30 }         // 30 seconds
+          { name: "Do situps", durationSec: 60 },
+          { name: "Make your bed", durationSec: 60 },
+          { name: "Drink water", durationSec: 30 },
+          { name: "Charge your phone", durationSec: 20 },
+          { name: "Do pushups", durationSec: 60 },
+          { name: "Read the daily text", durationSec: 180 },
+          { name: "Brush your teeth", durationSec: 120 },
+          { name: "Shave", durationSec: 120 },
+          { name: "Do squats", durationSec: 60 },
+          { name: "Shower", durationSec: 300 },
+          { name: "Do planks", durationSec: 60 },
+          { name: "Stretch", durationSec: 60 },
+          { name: "Read the Bible", durationSec: 600 },
+          { name: "Take vitamins", durationSec: 30 },
+          { name: "Morning pages", durationSec: 300 },
+          { name: "Pack bag", durationSec: 120 },
+          { name: "Apply deodorant", durationSec: 30 },
+          { name: "Apply lipstick", durationSec: 30 },
+          { name: "Get dressed", durationSec: 120 },
+          { name: "Put headphones on", durationSec: 30 },
         ]
       },
       {
         id: "evening",
         name: "🌙 Evening Reset",
         habits: [
-          { name: "Wash face", durationSec: 60 },
-          { name: "Skincare / Moisturize", durationSec: 120 },
-          { name: "Meditate (breathe)", durationSec: 30 }
+          { name: "Breathe", durationSec: 30 },
+          { name: "Irrigate", durationSec: 60 },
+          { name: "Brush your teeth", durationSec: 120 },
+          { name: "Scrape your tongue", durationSec: 30 },
+          { name: "Floss", durationSec: 120 },
+          { name: "Evening pages", durationSec: 180 },
+          { name: "Apply deodorant", durationSec: 30 },
+          { name: "Read the Bible", durationSec: 300 },
+          { name: "Prepare clothes", durationSec: 120 },
+          { name: "Gratitude", durationSec: 60 },
         ]
       },
       {
@@ -168,7 +211,7 @@ Here is an HTML document that implements a routine timer with customizable habit
       const currentHabit = habits[currentHabitIndex];
       habitNameSpan.textContent = currentHabit.name;
       stepCounterSpan.textContent = `Habit ${currentHabitIndex + 1} / ${habits.length}`;
-      
+
       // Render next or tick button based on whether it's the last habit
       const isLastHabit = (currentHabitIndex === habits.length - 1);
       nextTickContainer.innerHTML = ''; // clear
@@ -177,7 +220,7 @@ Here is an HTML document that implements a routine timer with customizable habit
         const tickBtn = document.createElement('button');
         tickBtn.id = 'tickFinishBtn';
         tickBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-2xl shadow-md transition flex items-center gap-2 text-lg min-w-[130px] justify-center';
-        tickBtn.innerHTML = '✅ Tick · Finish';
+        tickBtn.innerHTML = '✅ Finish';
         tickBtn.addEventListener('click', onFinishRoutine);
         nextTickContainer.appendChild(tickBtn);
       } else {
@@ -225,10 +268,10 @@ Here is an HTML document that implements a routine timer with customizable habit
         }
         return;
       }
-      
+
       remainingSeconds--;
       updateTimerDisplay();
-      
+
       if (remainingSeconds <= 0) {
         // timer reached exactly 0
         remainingSeconds = 0;
@@ -290,8 +333,6 @@ Here is an HTML document that implements a routine timer with customizable habit
       if (!activeRoutine) return;
       // stop any active timer
       stopTimerInterval();
-      // show congratulations
-      alert(`🎉 Amazing! 🎉\nYou completed "${activeRoutine.name}" routine!\nKeep the momentum! ✨`);
       // return to start screen (routines list)
       returnToRoutinesList();
     }
@@ -357,7 +398,7 @@ Here is an HTML document that implements a routine timer with customizable habit
         // card container
         const card = document.createElement('div');
         card.className = 'bg-white rounded-2xl shadow-lg border border-indigo-100 overflow-hidden card-hover transition-all';
-        
+
         // header with routine name & habit count
         const cardHeader = document.createElement('div');
         cardHeader.className = 'bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-4 border-b border-indigo-100';
@@ -365,7 +406,7 @@ Here is an HTML document that implements a routine timer with customizable habit
           <h3 class="text-xl font-bold text-indigo-800">${routine.name}</h3>
           <p class="text-xs text-slate-500 mt-1">${routine.habits.length} habits · focused flow</p>
         `;
-        
+
         // habits list preview
         const habitsPreview = document.createElement('ul');
         habitsPreview.className = 'px-5 py-3 space-y-2 bg-white';
@@ -381,7 +422,7 @@ Here is an HTML document that implements a routine timer with customizable habit
           `;
           habitsPreview.appendChild(li);
         });
-        
+
         // play button
         const cardFooter = document.createElement('div');
         cardFooter.className = 'px-5 py-4 bg-gray-50 border-t border-gray-100';
@@ -393,7 +434,7 @@ Here is an HTML document that implements a routine timer with customizable habit
           startRoutine(routine);
         });
         cardFooter.appendChild(playBtn);
-        
+
         card.appendChild(cardHeader);
         card.appendChild(habitsPreview);
         card.appendChild(cardFooter);
@@ -410,12 +451,12 @@ Here is an HTML document that implements a routine timer with customizable habit
         returnToRoutinesList();
       });
     }
-    
+
     // Edge case: when timer ends on last habit, we don't auto-finish, but user clicks Tick.
     // Also if timer hits zero on any habit, pause button becomes disabled, but Next still works.
     // When pressing Next after timer reached zero, we proceed to next habit normally (implemented in onNextHabit)
     // Additional safety: ensure after finish routine, the interval cleared.
-    
+
     // Initialize app: build cards, attach listeners, show start screen
     function initApp() {
       buildRoutinesCards();
@@ -424,35 +465,35 @@ Here is an HTML document that implements a routine timer with customizable habit
       timerView.classList.add('hidden');
       routinesView.classList.remove('hidden');
     }
-    
+
     // extra: if browser tab inactive, timers may lag but functionality remains solid.
     // also handle the scenario where timer display might need to cleanup if user refreshes mid routine (fresh start)
     initApp();
-    
+
     // Edge case: Prevent double interval on resume and ensure when next/tick we stop timer cleanly.
     // Also manually set before start routine any leftovers.
     // Improve: When moving to next, if timer is zero or running, we safely move.
     // we also need to handle if the user clicks Next on the last habit? But the last habit shows Tick, so safe.
-    
+
     // Fix edge: When "Next" is pressed while timer is paused, we move to next habit fresh (stops pause state)
     // Already implemented: onNextHabit calls stopTimerInterval and loadCurrentHabit which resets isPaused = false, fresh timer.
     // When "Tick" finishes routine, we show alert and return to list, interval cleared.
     // Also ensure that after finishing via Tick, the state is completely reset.
-    
+
     // Bonus: If timer reaches 0:00 on the last habit, user can still press Tick to finish routine.
     // That matches requirement.
     // Also we set the "tick" button text with icon.
     // Nice touch: Disable pause button when remainingSeconds == 0.
     // Provide demo with exactly morning, evening, and extra workout routine.
-    
+
     // Additionally, if there are no routines? we have 3 examples.
     // All habits time format displayed correctly in card preview.
     // The timer display uses consistent formatting (1:30 style for 90 sec but in our routines only full minutes and 30 sec)
     // For 30 seconds it shows "0:30" which is clear.
-    
+
     // Another scenario: user presses play multiple times: we guard by cleaning previous interval and replacing active routine.
     // Perfect.
-    
+
     // For full compliance: the habit timer example from morning: make your bed 1:00, brush teeth 2:00, drink water 0:30.
     // Evening: Wash face 1:00, skincare 2:00, meditation 0:30.
     // If user presses next before timer ends, jumps immediately to next habit with full duration.
@@ -460,10 +501,10 @@ Here is an HTML document that implements a routine timer with customizable habit
     // If timer expires, stops at 0:00 and pause button disabled, next/tick still works.
     // Congratulations on finish works.
     // Edge case: after finishing routine and returning to list, all global variables are reset, next routine fresh.
-    
+
     // Also when pressing "Exit" button on timer screen, we return to list and cancel timer.
-    console.log("Routine timer ready — start your flow!");
   </script>
 </body>
+
 </html>
 ```
